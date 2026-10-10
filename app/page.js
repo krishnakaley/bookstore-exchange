@@ -85,6 +85,7 @@ export default async function Home() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-15 gap-y-8 justify-items-center">
             {books.map((book) => (
+              
               <BookCard
                 key={book.id}
                 id={book.id}
@@ -93,6 +94,8 @@ export default async function Home() {
                 price={book.price}
                 imageUri={book.coverImageUrl}
                 type={book.type}
+                ownerId={book.ownerId}
+
               />
             ))}
           </div>

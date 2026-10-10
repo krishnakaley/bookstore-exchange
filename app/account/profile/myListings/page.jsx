@@ -64,6 +64,33 @@ export default function MyListingsPage() {
       </div>
     );
   }
+  async function handleStatusChange(id, newStatus) {
+    try {
+      const response = await fetch(`/api/mybooks/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to update status');
+        return;
+      }
+
+      setListings((prev) =>
+        prev.map((listing) =>
+          listing._id === id ? { ...listing, status: newStatus } : listing
+        )
+      );
+    } catch (error) {
+      console.error('Status update error:', error);
+      alert('Something went wrong while updating the status.');
+    }
+  }
 
   return (
     <div className="max-w-[1120px] w-full mx-auto px-6 pt-3">
@@ -98,20 +125,31 @@ export default function MyListingsPage() {
                   alt=""
                 />
               </div>
-
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold text-ink truncate">
                   {listing.title}
                 </div>
-                <span
-                  className={`stamp ${STAMP_CLASS[listing.status] || 'stamp-open'} mt-1 inline-block`}
-                >
-                  {listing.status}
-                </span>
-              </div>
-
+              <select
+                value={listing.status}
+                onChange={(e) =>
+                  handleStatusChange(listing._id, e.target.value)
+                }
+                className={`stamp ${STAMP_CLASS[listing.status] || 'stamp-open'} mt-1`}
+              >
+                <option value="open">open</option>
+                <option value="pending">pending</option>
+                <option value="closed">closed</option>
+              </select>
+              </div> 
               <Link
-                href={`/account/`}
+                href={`/books-items/${listing._id}`}
+                className="border border-line rounded-md px-3 py-1.5 text-xs font-semibold text-ink
+                           hover:bg-paper-2 transition-colors shrink-0"
+              >
+                View
+              </Link>
+              <Link
+                href={`/editListing/${listing._id}`}
                 className="border border-line rounded-md px-3 py-1.5 text-xs font-semibold text-ink
                            hover:bg-paper-2 transition-colors shrink-0"
               >
