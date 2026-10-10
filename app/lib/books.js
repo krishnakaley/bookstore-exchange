@@ -5,7 +5,7 @@ import '../models/User';
 export async function getFeaturedBooks() {
   await connectDB();
 
-  const books = await Books.aggregate([{ $sample: { size: 6 } }]);
+  const books = await Books.aggregate([{ $sample: { size: 8 } }]);
 
   return books.map((book) => ({
     ...book,

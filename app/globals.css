@@ -52,7 +52,9 @@
   .stamp-pending {
     @apply text-mustard-dark border-mustard-dark;
   }
-  .stamp-closed,
+  .stamp-closed{
+    @apply text-red-600 border-red-600;
+  }
   .stamp-declined {
     @apply text-gray-400 border-gray-400;
   }
@@ -68,12 +70,3 @@ h1, h2, h3, .display {
   @apply font-display tracking-tight;
 }
 
-.stamp {
-  @apply inline-flex items-center font-mono text-[10.5px] font-semibold tracking-wide uppercase
-         px-2 py-[3px] rounded-[3px] border border-dashed;
-  transform: rotate(-2deg);
-}
-.stamp-open, .stamp-accepted { @apply text-[#3E7A4C] border-[#3E7A4C]; }
-.stamp-pending { @apply text-mustard-dark border-mustard-dark; }
-.stamp-closed, .stamp-declined { @apply text-[#9A9282] border-[#9A9282]; }
-.stamp-confirmed { @apply text-spine border-spine; }
