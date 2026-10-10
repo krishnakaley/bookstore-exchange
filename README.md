@@ -12,4 +12,4 @@ Next.js, MongoDB, Tailwind CSS, deployed on Vercel
 
 ## Live Site
 
-(https://bookstore-exchange.vercel.app)
+(https://bookswapx.vercel.app)
