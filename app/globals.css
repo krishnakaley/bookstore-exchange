@@ -70,3 +70,15 @@ h1, h2, h3, .display {
   @apply font-display tracking-tight;
 }
 
+
+.status-ribbon-open {
+  background-color: #16a34a;
+}
+
+.status-ribbon-pending {
+  background-color: #d97706;
+}
+
+.status-ribbon-closed {
+  background-color: #dc2626;
+}

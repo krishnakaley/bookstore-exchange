@@ -95,7 +95,7 @@ export default async function Home() {
                 imageUri={book.coverImageUrl}
                 type={book.type}
                 ownerId={book.ownerId}
-
+                status={book.status}
               />
             ))}
           </div>

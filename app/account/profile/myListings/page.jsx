@@ -126,21 +126,34 @@ export default function MyListingsPage() {
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-ink truncate">
+                <div className="text-sm font-semibold text-ink truncate p-0.5">
                   {listing.title}
                 </div>
-              <select
-                value={listing.status}
-                onChange={(e) =>
-                  handleStatusChange(listing._id, e.target.value)
-                }
-                className={`stamp ${STAMP_CLASS[listing.status] || 'stamp-open'} mt-1`}
-              >
-                <option value="open">open</option>
-                <option value="pending">pending</option>
-                <option value="closed">closed</option>
-              </select>
-              </div> 
+                <div className="text-xs text-ink truncate p-0.5">
+                  {listing.author}
+                </div>
+                
+                <select
+                  value={listing.status}
+                  onChange={(e) => {
+                    const newStatus = e.target.value;
+
+                    const confirmed = window.confirm(
+                      `Are you sure you want to change status from "${listing.status}" to "${newStatus}"?`
+                    );
+
+                    if (confirmed) {
+                      handleStatusChange(listing._id, newStatus);
+                    }
+                  }}
+                  className={`stamp ${STAMP_CLASS[listing.status] || 'stamp-open'} mt-1`}
+                >
+                  <option value="open">open</option>
+                  <option value="pending">pending</option>
+                  <option value="closed">closed</option>
+                </select>
+              
+              </div>
               <Link
                 href={`/books-items/${listing._id}`}
                 className="border border-line rounded-md px-3 py-1.5 text-xs font-semibold text-ink
