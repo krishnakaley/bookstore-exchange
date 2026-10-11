@@ -12,15 +12,42 @@ const NAV_LINKS = [
   { href: '/exchange', label: 'Exchange' },
 ];
 
-const cartCount = 0;
-
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const headerRef = useRef(null);
+  const [cartCount, setCartCount] = useState(0);
+  useEffect(() => {
+    if (status !== 'authenticated') {
+      setCartCount(0);
+      return;
+    }
 
+    async function fetchCartCount() {
+      try {
+        const response = await fetch('/api/cart', {
+          cache: 'no-store',
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        setCartCount(data.items?.length ?? 0);
+      } catch (error) {
+        console.error('Failed to fetch cart:', error);
+      }
+    }
+
+    fetchCartCount();
+
+    window.addEventListener('cartUpdated', fetchCartCount);
+
+    return () => {
+      window.removeEventListener('cartUpdated', fetchCartCount);
+    };
+  }, [status]);
   useEffect(() => {
     function handleOutsideClick(event) {
       if (headerRef.current && !headerRef.current.contains(event.target)) {
@@ -35,9 +62,9 @@ export default function Header() {
     };
   }, []);
   const closeMenus = () => {
-  setMobileOpen(false);
-  setAccountOpen(false);
-};
+    setMobileOpen(false);
+    setAccountOpen(false);
+  };
 
   return (
     <header
@@ -76,7 +103,7 @@ export default function Header() {
             <Link
               href="/cart"
               onClick={closeMenus}
-              className="relative text-base p-1"
+              className="relative  p-1 text-xl"
               aria-label="Cart"
             >
               🛒
@@ -176,7 +203,7 @@ export default function Header() {
           {status === 'unauthenticated' && (
             <>
               <Link
-                href="/login"               
+                href="/login"
                 onClick={() => setMobileOpen(false)}
                 className="text-[#E7E1CE] py-2.5 text-sm border-b border-[#3A5545]"
               >

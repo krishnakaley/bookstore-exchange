@@ -11,21 +11,39 @@ export default async function BookDetailsPage({ params }) {
   if (!book) {
     notFound();
   }
-
+  const STAMP_CLASS = {
+    open: 'stamp-open',
+    pending: 'stamp-pending',
+    closed: 'stamp-closed',
+  };
   return (
     <div className="max-w-[1120px] w-full mx-auto px-6 md:px-10 lg:px-12 py-10">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        <div className="aspect-[2/3] h-[500px] flex items-center justify-center overflow-hidden">
+        <div className="relative aspect-[2/3] h-[500px] flex items-center justify-center overflow-hidden">
           <img
             src={book.coverImageUrl}
             alt={book.title}
             className="max-w-full max-h-full object-contain"
           />
+
+          {/* Slanted Status Ribbon */}
+          <div
+            className={`absolute top-6 -right-9 w-36 text-center text-white text-xs font-bold uppercase py-1 rotate-45 shadow-md ${
+              {
+                open: 'status-ribbon-open',
+                pending: 'status-ribbon-pending',
+                closed: 'status-ribbon-closed',
+              }[book.status] || 'status-ribbon-open'
+            }`}
+          >
+            {book.status || 'open'}
+          </div>
         </div>
 
         {/* Book Information */}
         <div className="flex flex-col">
           {/* Type */}
+
           <span
             className={`stamp ${
               book.type === 'exchange' ? 'stamp-exchange' : 'stamp-new'
@@ -46,7 +64,7 @@ export default async function BookDetailsPage({ params }) {
           <p className="font-bold text-muted mt-4 mb-5">GENRE: {book.genre}</p>
 
           {/* Description */}
-          <h4 className='font-bold'>DESCRIPTION</h4>
+          <h4 className="font-bold">DESCRIPTION</h4>
 
           <p className="whitespace-pre-line text-gray-700 mt-2 mb-5 leading-7">
             {book.description}
@@ -54,7 +72,7 @@ export default async function BookDetailsPage({ params }) {
           {book.wantedInReturn && (
             <>
               {' '}
-              <h4 className='font-bold'>WANTED IN RETURN</h4>
+              <h4 className="font-bold">WANTED IN RETURN</h4>
               <p className="whitespace-pre-line text-gray-700 mt-2 mb-5 leading-7">
                 {book.wantedInReturn}
               </p>
@@ -75,11 +93,13 @@ export default async function BookDetailsPage({ params }) {
           </div>
 
           {/* Stock */}
-          {book.wantedInReturn?<div></div>:
-          <p className="text- font-bold text-muted mt-3">
-            {book.stock > 0 ? `${book.stock} available` : 'Out of stock'}
-          </p>
-}
+          {book.wantedInReturn ? (
+            <div></div>
+          ) : (
+            <p className="text- font-bold text-muted mt-3">
+              {book.stock > 0 ? `${book.stock} available` : 'Out of stock'}
+            </p>
+          )}
           {/* Owner */}
           <div className="flex items-center gap-3 mt-6">
             <img

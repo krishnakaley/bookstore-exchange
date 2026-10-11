@@ -5,8 +5,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../api/auth/[...nextauth]/route';
 
 export default async function BookItems({ searchParams }) {
-const params = await searchParams;
- const search = params.search || '';
+  const params = await searchParams;
+  const search = params.search || '';
   const books = await getBooks(search);
   const session = await getServerSession(authOptions);
 
@@ -14,7 +14,6 @@ const params = await searchParams;
     <>
       {/* ---------- All Available Books ---------- */}
       <section className="max-w-[1120px] w-full mx-auto px-6 p-10 ">
-       
         {/* Search Bar */}
         <form
           method="GET"
@@ -25,7 +24,7 @@ const params = await searchParams;
             <input
               type="text"
               name="search"
-              defaultValue=''
+              defaultValue=""
               placeholder="Search books..."
               className="flex-1 h-11 border border-gray-400 px-4 text-sm outline-none focus:border-gray-700 rounded-l-md"
             />
@@ -57,16 +56,7 @@ const params = await searchParams;
             </Link>
           </div>
         ) : (
-          <div
-            className="
-    grid
-    grid-cols-1
-    sm:grid-cols-2
-    lg:grid-cols-4
-    gap-[30px]
-    justify-items-center
-  "
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-15 gap-y-8 justify-items-center">
             {books.map((book) => (
               <BookCard
                 key={book.id}
@@ -77,6 +67,7 @@ const params = await searchParams;
                 imageUri={book.coverImageUrl}
                 type={book.type}
                 WantedInReturn={book.wantedInReturn || null}
+                status={book.status}
               />
             ))}
           </div>
