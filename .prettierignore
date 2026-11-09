@@ -1,4 +1,4 @@
-echo 'node_modules
+node_modules
 .next
 build
-package-lock.json' > .prettierignore
+package-lock.json
