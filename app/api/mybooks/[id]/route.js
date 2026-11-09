@@ -1,11 +1,10 @@
-
 import connectDB from '../../../services/database/mongodb';
 import Book from '../../../models/booklisting';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]/route';
 import { v2 as cloudinary } from 'cloudinary';
 import { NextResponse } from 'next/server';
-
+import mongoose from 'mongoose';
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -17,31 +16,25 @@ export async function DELETE(request, { params }) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return Response.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { id } = await params;
 
-    console.log("DELETE BOOK ID:", id);
+    console.log('DELETE BOOK ID:', id);
 
     await connectDB();
 
     const book = await Book.findById(id);
 
     if (!book) {
-      return Response.json(
-        { error: "Book not found" },
-        { status: 404 }
-      );
+      return Response.json({ error: 'Book not found' }, { status: 404 });
     }
 
     // Check owner
     if (book.ownerId.toString() !== session.user.id) {
       return Response.json(
-        { error: "You are not allowed to delete this listing" },
+        { error: 'You are not allowed to delete this listing' },
         { status: 403 }
       );
     }
@@ -55,29 +48,24 @@ export async function DELETE(request, { params }) {
     await Book.findByIdAndDelete(id);
 
     return Response.json({
-      message: "Book and image deleted successfully",
+      message: 'Book and image deleted successfully',
     });
-
   } catch (error) {
-    console.error("DELETE listing error:", error);
+    console.error('DELETE listing error:', error);
 
     return Response.json(
-      { error: "Failed to delete listing" },
+      { error: 'Failed to delete listing' },
       { status: 500 }
     );
   }
 }
-
 
 export async function PUT(request, { params }) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return Response.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { id } = await params;
@@ -88,10 +76,7 @@ export async function PUT(request, { params }) {
     const book = await Book.findById(id);
 
     if (!book) {
-      return Response.json(
-        { error: 'Book not found' },
-        { status: 404 }
-      );
+      return Response.json({ error: 'Book not found' }, { status: 404 });
     }
 
     // Only the owner can update this listing.
@@ -103,7 +88,7 @@ export async function PUT(request, { params }) {
     }
 
     const allowedTypes = ['new', 'exchange'];
-    const allowedStatus = ['open', 'pending','closed'];
+    const allowedStatus = ['open', 'pending', 'closed'];
 
     if (
       !body.title?.trim() ||
@@ -131,8 +116,7 @@ export async function PUT(request, { params }) {
     book.wantedInReturn = body.wantedInReturn || '';
 
     // Keep the existing image if no new image was selected.
-    book.coverImageUrl =
-      body.coverImageUrl ?? book.coverImageUrl;
+    book.coverImageUrl = body.coverImageUrl ?? book.coverImageUrl;
 
     book.coverImagePublicId =
       body.coverImagePublicId ?? book.coverImagePublicId;
@@ -166,20 +150,47 @@ export async function PUT(request, { params }) {
   }
 }
 
-
 export async function PATCH(request, { params }) {
   try {
-    await connectDB();
+    // 1. Must be logged in
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const { id } = await params;
-    const { status } = await request.json();
 
+    // 2. Reject malformed ids before hitting the DB
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: 'Invalid listing id' },
+        { status: 400 }
+      );
+    }
+
+    // 3. Validate the new status
+    const { status } = await request.json();
     const allowedStatuses = ['open', 'pending', 'closed'];
 
     if (!allowedStatuses.includes(status)) {
+      return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+    }
+
+    await connectDB();
+
+    // 4. Listing must exist
+    const book = await Book.findById(id);
+
+    if (!book) {
+      return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
+    }
+
+    // 5. Only the owner may change it
+    if (book.ownerId.toString() !== session.user.id) {
       return NextResponse.json(
-        { error: 'Invalid status' },
-        { status: 400 }
+        { error: 'You are not allowed to update this listing' },
+        { status: 403 }
       );
     }
 
@@ -188,13 +199,6 @@ export async function PATCH(request, { params }) {
       { status },
       { new: true, runValidators: true }
     );
-
-    if (!updatedBook) {
-      return NextResponse.json(
-        { error: 'Listing not found' },
-        { status: 404 }
-      );
-    }
 
     return NextResponse.json(updatedBook);
   } catch (error) {
