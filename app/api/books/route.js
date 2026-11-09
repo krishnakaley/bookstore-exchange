@@ -1,22 +1,79 @@
 import connectDB from '../../services/database/mongodb';
 import Book from '../../models/booklisting';
 
-// export async function GET() {
-//   try {
-//     await connectDB();
+import { getServerSession } from 'next-auth';
+import connectDB from '../../services/database/mongodb';
+import Book from '../../models/booklisting';
+import { authOptions } from '../auth/[...nextauth]/route';
 
-//     const books = await Book.find({});
+export async function POST(request) {
+  try {
+    // ownerId must come from the session, never from the client
+    const session = await getServerSession(authOptions);
 
-//     return Response.json(books);
-//   } catch (error) {
-//     console.error("GET books error:", error);
+    if (!session?.user?.id) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-//     return Response.json(
-//       { error: "Failed to fetch books." },
-//       { status: 500 }
-//     );
-//   }
-// }
+    const {
+      title,
+      author,
+      description,
+      price,
+      coverImageUrl,
+      coverImagePublicId,
+      stock,
+      genre,
+      type,
+      wantedInReturn,
+    } = await request.json();
+
+    if (!title || !description || !coverImageUrl || price === undefined) {
+      return Response.json(
+        { error: 'Missing required field.' },
+        { status: 400 }
+      );
+    }
+
+    if (!['new', 'exchange'].includes(type)) {
+      return Response.json(
+        { error: 'Type must be "new" or "exchange".' },
+        { status: 400 }
+      );
+    }
+
+    await connectDB();
+
+    const newListing = await Book.create({
+      title,
+      author,
+      description,
+      price,
+      coverImageUrl,
+      coverImagePublicId,
+      stock,
+      genre,
+      type,
+      wantedInReturn,
+      ownerId: session.user.id,
+    });
+
+    return Response.json(
+      {
+        message: 'Book listed successfully!',
+        book: newListing,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error('Listing Error:', error);
+
+    return Response.json(
+      { error: 'An unexpected error occurred.' },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request) {
   try {
